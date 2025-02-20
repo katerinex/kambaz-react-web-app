@@ -1,93 +1,45 @@
-//src/Kambaz/Navigation.tsx
-import { Link } from "react-router-dom";
+// src/Kambaz/Navigation.tsx
+import { Link, useLocation } from "react-router-dom";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { IoCalendarOutline } from "react-icons/io5";
 import { LiaBookSolid, LiaCogSolid } from "react-icons/lia";
 import { FaInbox, FaRegCircleUser } from "react-icons/fa6";
+import { ListGroup } from 'react-bootstrap';
 import './styles.css';
 
-export default function KambazNavigation() {
-  return (
-    <div
-      id="wd-kambaz-navigation"
-      style={{ width: 110 }}  // Sidebar width set to ~110px
-      className="list-group rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2 text-center"
-    >
-      {/* NEU Logo */}
-      <a
-        id="wd-neu-link"
-        target="_blank"
-        href="https://www.northeastern.edu/"
-        className="list-group-item bg-black border-0"
-      >
-        <img src="/images/NEU-logo.svg" width="75px" alt="NEU Logo" />
-      </a>
 
-      {/* Account */}
-      <Link
-        to="/Kambaz/Account"
-        id="wd-account-link"
-        className="list-group-item text-white bg-black border-0 py-3"
-      >
-        <FaRegCircleUser className="fs-1 text-white" />
+export default function KambazNavigation() {
+  const location = useLocation();
+  const { pathname } = location; // You can directly destructure pathname here
+
+  const links = [
+    { label: "Dashboard", path: "/Kambaz/Dashboard", icon: AiOutlineDashboard },
+    { label: "Courses",   path: "/Kambaz/Dashboard", icon: LiaBookSolid },
+    { label: "Calendar",  path: "/Kambaz/Calendar",  icon: IoCalendarOutline },
+    { label: "Inbox",     path: "/Kambaz/Inbox",     icon: FaInbox },
+    { label: "Labs",      path: "/Labs",             icon: LiaCogSolid },
+  ];
+
+  return (
+    <ListGroup id="wd-kambaz-navigation" style={{width: 120}}
+         className="rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2">
+      <ListGroup.Item id="wd-neu-link" target="_blank" href="https://www.northeastern.edu/"
+        action className="bg-black border-0 text-center">
+        <img src="/images/NEU.png" width="75px" /></ListGroup.Item>
+      <ListGroup.Item as={Link} to="/Kambaz/Account" className={`text-center border-0 bg-black
+            ${pathname.includes("Account")? "bg-white text-danger": "bg-black text-white"}`}>
+        <FaRegCircleUser className={`fs-1 ${pathname.includes("Account")? "text-danger": "text-white"}`} />
         <br />
         Account
-      </Link>
-
-      {/* Dashboard (Active Link) */}
-      <Link
-        to="/Kambaz/Dashboard"
-        id="wd-dashboard-link"
-        className="list-group-item bg-white text-danger border-0 py-3 active-link"
-      >
-        <AiOutlineDashboard className="fs-1 text-danger" />
-        <br />
-        Dashboard
-      </Link>
-
-      {/* Courses */}
-      <Link
-        to="/Kambaz/Courses"
-        id="wd-course-link"
-        className="list-group-item text-white bg-black border-0 py-3"
-      >
-        <LiaBookSolid className="fs-1 text-danger" />
-        <br />
-        Courses
-      </Link>
-
-      {/* Calendar */}
-      <Link
-        to="/Kambaz/Calendar"
-        id="wd-calendar-link"
-        className="list-group-item text-white bg-black border-0 py-3"
-      >
-        <IoCalendarOutline className="fs-1 text-danger" />
-        <br />
-        Calendar
-      </Link>
-
-      {/* Inbox */}
-      <Link
-        to="/Kambaz/Inbox"
-        id="wd-inbox-link"
-        className="list-group-item text-white bg-black border-0 py-3"
-      >
-        <FaInbox className="fs-1 text-danger" />
-        <br />
-        Inbox
-      </Link>
-
-      {/* Labs */}
-      <Link
-  to="/Labs"  // Updated to match the path in App.tsx
-  id="wd-labs-link"
-  className="list-group-item text-white bg-black border-0 py-3"
->
-  <LiaCogSolid className="fs-1 text-danger" />
-  <br />
-  Labs
-</Link>
-    </div>
+      </ListGroup.Item>
+      {links.map((link) => (
+        <ListGroup.Item key={link.path} as={Link} to={link.path} className={`bg-black text-center border-0
+              ${pathname.includes(link.label)? "text-danger bg-white": "text-white bg-black"}`}>
+          {link.icon({ className: "fs-1 text-danger"})}
+          <br />
+          {link.label}
+        </ListGroup.Item>
+      ))}
+    </ListGroup>
   );
 }

@@ -1,14 +1,20 @@
-//src/Kambaz/Courses/Modules/index.tsx
+// src/Kambaz/Courses/Modules/index.tsx
+
+import React from "react";
 import ModulesControls from "./ModulesControls";
 import ModuleControlButtons from "./ModuleControlButtons";
 import LessonControlButtons from "./LessonControlButtons";
 import { ListGroup } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs"; 
-//import '../../styles.css';
 
-export default function Modules() {
+interface ModulesProps {
+  courseId: string | undefined; // Add courseId as a prop
+}
+
+const Modules: React.FC<ModulesProps> = ({ courseId }) => {
   return (
     <div>
+      <h3>Modules for Course {courseId}</h3> {/* Displaying courseId here */}
       <ModulesControls /><br /><br /><br /><br />
       <ListGroup className="rounded-0" id="wd-modules">
         <ListGroup.Item className="wd-module p-0 mb-5 fs-5 border-gray">
@@ -47,6 +53,6 @@ export default function Modules() {
       </ListGroup>
     </div>
   );
-}
+};
 
-  
+export default Modules;
