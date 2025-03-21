@@ -16,6 +16,8 @@ const store = configureStore({
   },
 });
 
+// comment 
+
 export default store;
 
 export type RootState = ReturnType<typeof store.getState>;
