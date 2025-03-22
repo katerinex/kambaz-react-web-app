@@ -26,3 +26,5 @@ export const findUserById = async (userId: string) => {
   const response = await axios.get(`${USERS_API}/${userId}`);
   return response.data;
 };
+
+// comments
