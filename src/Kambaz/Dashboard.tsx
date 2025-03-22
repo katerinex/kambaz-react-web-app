@@ -15,7 +15,7 @@ interface Course {
 }
 
 interface DashboardProps {
-  courses: Course[]; // Change this line to Course[] and make it required
+  courses: Course[]; 
   course?: Course;
   setCourse?: React.Dispatch<React.SetStateAction<Course>>;
   addNewCourse?: () => void;
@@ -91,7 +91,7 @@ export default function Dashboard({
       <hr />
       <div className="row" id="wd-dashboard-courses">
         <div className="row row-cols-1 row-cols-md-5 g-4">
-          {courses.map((course) => ( // Removed optional chaining
+          {courses.map((course) => ( 
             <div key={course._id} className="col" style={{ width: "300px" }}>
               <div className="card">
                 <div className="card-body">
