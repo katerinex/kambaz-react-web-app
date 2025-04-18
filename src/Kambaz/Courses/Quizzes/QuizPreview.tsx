@@ -1,5 +1,4 @@
-
-//src/Kambaz/Courses/Quizzes/QuizPreview.tsx
+// src/Kambaz/Courses/Quizzes/QuizPreview.tsx
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";

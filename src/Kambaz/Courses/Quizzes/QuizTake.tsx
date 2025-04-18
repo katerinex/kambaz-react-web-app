@@ -177,7 +177,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
   const handleSubmitQuiz = async () => {
     setQuizCompleted(true);
     setTimerActive(false);
-    console.log("IN HANDLE SUBMIT QUIZ");
+    
     // If not in preview mode, submit to server
     if (!previewMode && user && qid) {
       // Convert answers object to array of QuizAnswer objects
@@ -208,17 +208,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
         };
       });
 
-      // if (!previewMode && user && qid) {
-      //   const existingAttempts = await findQuizAttemptsByQuizAndUser(qid, user._id);
-      //   const maxAttempts = quiz.multipleAttempts ? quiz.attemptsAllowed : 1;
-      //   if (existingAttempts.length >= maxAttempts) {
-      //     alert("You have reached the maximum number of allowed attempts for this quiz.");
-      //     return;
-      //   }
-      // }
-
       try {
-        console.log("CREATING ATTEMPT");
         const newAttempt = await createQuizAttempt(qid, {
           quizId: qid,
           userId: user._id,
@@ -242,7 +232,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
     const attemptsExceeded = existingAttempts.length >= maxAttempts;
 
     return (
-      <Container className="mt-4" >
+      <Container className="mt-4">
         <Card>
           <Card.Header className="bg-primary text-white">
             <h4>{quiz.title}</h4>
@@ -410,7 +400,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
               </Button>
             ) : (
               previewMode ? (
-                <Button variant="success" onClick={handleSubmitQuiz}>Submit Quiz</Button>
+                null // Don't show submit button in the question navigation in preview mode
               ) : (
                 <Button
                   variant="success"
@@ -445,13 +435,14 @@ const QuizTake: React.FC<QuizTakeProps> = ({
         </Card.Footer>
       </Card>
 
-      {(quiz.oneQuestionAtATime === false || previewMode) && (
+      {/* Only show the bottom submit button when not in preview mode */}
+      {!previewMode && quiz.oneQuestionAtATime === false && (
         <div className="quiz-submit-section text-center mb-4">
           <Button
             variant="success"
             size="lg"
             onClick={handleSubmitQuiz}
-            disabled={!previewMode && Object.keys(answers).length < questions.length}
+            disabled={Object.keys(answers).length < questions.length}
           >
             Submit Quiz
           </Button>
