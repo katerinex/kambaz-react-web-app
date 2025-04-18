@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { 
-  Card, 
-  Form, 
-  Button, 
-  ProgressBar, 
-  Badge, 
+import {
+  Card,
+  Form,
+  Button,
+  ProgressBar,
+  Badge,
   Container,
   Alert
 } from "react-bootstrap";
-import { findQuizById, createQuizAttempt, QuizAnswer, QuizAttempt } from "./client";
+import { findQuizById, createQuizAttempt, QuizAnswer, QuizAttempt, findQuizAttemptsByQuizAndUser } from "./client";
 import { fetchQuizSuccess, createQuizAttemptSuccess } from "./reducer";
 
 interface QuizTakeProps {
@@ -21,31 +21,32 @@ interface QuizTakeProps {
   onAnswerChange?: (questionId: string, answer: any, isCorrect: boolean) => void;
 }
 
-const QuizTake: React.FC<QuizTakeProps> = ({ 
-  previewMode = false, 
-  savedAnswers = [], 
-  onAnswerChange = () => {} 
+const QuizTake: React.FC<QuizTakeProps> = ({
+  previewMode = false,
+  savedAnswers = [],
+  onAnswerChange = () => { }
 }) => {
   const { cid, qid } = useParams<{ cid: string; qid: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   // Get quiz from Redux state
   const { quizzes, currentQuiz } = useSelector((state: any) => state.quizReducer);
   const quiz = quizzes.find((q: any) => q._id === qid) || currentQuiz;
-  
+
   // Get user from Redux state
   const { user } = useSelector((state: any) => state.accountReducer);
-  
+
   // State for quiz progress
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [existingAttempts, setExistingAttempts] = useState<QuizAttempt[]>([]);
   const [answers, setAnswers] = useState<{ [key: string]: any }>({});
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
-  
+
   useEffect(() => {
     // Fetch quiz if not in state
     const fetchQuiz = async () => {
@@ -58,10 +59,10 @@ const QuizTake: React.FC<QuizTakeProps> = ({
         }
       }
     };
-    
+
     fetchQuiz();
   }, [qid, quiz, dispatch]);
-  
+
   // Initialize from saved answers if in preview mode
   useEffect(() => {
     if (previewMode && savedAnswers && savedAnswers.length > 0) {
@@ -72,16 +73,16 @@ const QuizTake: React.FC<QuizTakeProps> = ({
       setAnswers(initialAnswers);
     }
   }, [previewMode, savedAnswers]);
-  
+
   // Set up timer
   useEffect(() => {
     if (quiz && quizStarted && !quizCompleted && timerActive) {
       const timeLimit = quiz.timeLimit || 20; // Default 20 minutes
       setTimeRemaining(timeLimit * 60); // Convert to seconds
-      
+
       // Track time spent
       const startTime = Date.now();
-      
+
       const timer = setInterval(() => {
         setTimeRemaining(prevTime => {
           if (prevTime <= 1) {
@@ -91,36 +92,51 @@ const QuizTake: React.FC<QuizTakeProps> = ({
           }
           return prevTime - 1;
         });
-        
+
         setTimeSpent(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
-      
+
       return () => clearInterval(timer);
     }
   }, [quiz, quizStarted, quizCompleted, timerActive]);
+
+  useEffect(() => {
+    const fetchAttempts = async () => {
+      if (!previewMode && quiz && user && qid) {
+        try {
+          const attempts = await findQuizAttemptsByQuizAndUser(qid, user._id);
+          setExistingAttempts(attempts);
+        } catch (error) {
+          console.error("Error fetching quiz attempts:", error);
+        }
+      }
+    };
   
+    fetchAttempts();
+  }, [previewMode, quiz, user, qid]);
+
   if (!quiz) {
     return <div>Loading quiz...</div>;
   }
-  
+
   const questions = quiz.questions || [];
   const currentQuestion = questions[currentQuestionIndex] || null;
-  
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
-  
+
   const handleStartQuiz = () => {
     setQuizStarted(true);
     setTimerActive(true);
   };
-  
+
   const handleAnswerQuestion = (questionId: string, answer: any) => {
     // Check if the answer is correct
     let isCorrect = false;
-    
+
     if (currentQuestion.questionType === 'multiple_choice') {
       const correctChoice = currentQuestion.choices.find((c: any) => c.isCorrect);
       isCorrect = answer === correctChoice?.id;
@@ -128,47 +144,47 @@ const QuizTake: React.FC<QuizTakeProps> = ({
       isCorrect = answer === currentQuestion.correctAnswer;
     } else if (currentQuestion.questionType === 'fill_blank') {
       // Check if answer matches any of the possible answers (case insensitive)
-      const possibleAnswers = currentQuestion.blankAnswers.map((a: any) => 
+      const possibleAnswers = currentQuestion.blankAnswers.map((a: any) =>
         a.text.toLowerCase().trim()
       );
       isCorrect = possibleAnswers.includes(String(answer).toLowerCase().trim());
     }
-    
+
     // Update local state
     setAnswers({
       ...answers,
       [questionId]: answer
     });
-    
+
     // If in preview mode, notify parent of answer change
     if (previewMode && onAnswerChange) {
       onAnswerChange(questionId, answer, isCorrect);
     }
   };
-  
+
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
-  
+
   const handlePrevQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
-  
+
   const handleSubmitQuiz = async () => {
     setQuizCompleted(true);
     setTimerActive(false);
-    
+    console.log("IN HANDLE SUBMIT QUIZ");
     // If not in preview mode, submit to server
     if (!previewMode && user && qid) {
       // Convert answers object to array of QuizAnswer objects
       const answerArray: QuizAnswer[] = Object.keys(answers).map(questionId => {
         const answer = answers[questionId];
         const question = questions.find((q: any) => q.id === questionId);
-        
+
         // Determine if the answer is correct
         let isCorrect = false;
         if (question) {
@@ -178,53 +194,55 @@ const QuizTake: React.FC<QuizTakeProps> = ({
           } else if (question.questionType === 'true_false') {
             isCorrect = answer === question.correctAnswer;
           } else if (question.questionType === 'fill_blank') {
-            const possibleAnswers = question.blankAnswers.map((a: any) => 
+            const possibleAnswers = question.blankAnswers.map((a: any) =>
               a.text.toLowerCase().trim()
             );
             isCorrect = possibleAnswers.includes(String(answer).toLowerCase().trim());
           }
         }
-        
+
         return {
           questionId,
           answer,
           isCorrect
         };
       });
-      
-      // Calculate score
-      const score = answerArray.reduce((total, answer) => total + (answer.isCorrect ? 1 : 0), 0);
-      
+
+      // if (!previewMode && user && qid) {
+      //   const existingAttempts = await findQuizAttemptsByQuizAndUser(qid, user._id);
+      //   const maxAttempts = quiz.multipleAttempts ? quiz.attemptsAllowed : 1;
+      //   if (existingAttempts.length >= maxAttempts) {
+      //     alert("You have reached the maximum number of allowed attempts for this quiz.");
+      //     return;
+      //   }
+      // }
+
       try {
-        // Create attempt object
-        const attemptData: Omit<QuizAttempt, '_id'> = {
+        console.log("CREATING ATTEMPT");
+        const newAttempt = await createQuizAttempt(qid, {
           quizId: qid,
-          userId: user.id,
-          timestamp: new Date().toISOString(),
-          score,
-          totalPoints: questions.length,
+          userId: user._id,
           answers: answerArray,
-          completed: true,
-          timeSpent,
-          isPreview: false
-        };
-        
-        // Submit to server
-        const savedAttempt = await createQuizAttempt(qid, attemptData);
-        
-        // Update Redux
-        dispatch(createQuizAttemptSuccess(savedAttempt));
-        
-        console.log("Quiz attempt saved:", savedAttempt);
-      } catch (error) {
-        console.error("Error saving quiz attempt:", error);
+          timeSpent: timeSpent,
+          timestamp: new Date().toISOString(),
+          score: 0,
+          totalPoints: questions.length
+        });
+        dispatch(createQuizAttemptSuccess(newAttempt));
+        navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}?refreshAttempts=true`);
+
+      } catch (err) {
+        console.error("Failed to create quiz attempt:", err);
       }
     }
   };
-  
+
   if (!quizStarted) {
+    const maxAttempts = quiz.multipleAttempts ? quiz.attemptsAllowed : 1;
+    const attemptsExceeded = existingAttempts.length >= maxAttempts;
+
     return (
-      <Container className="mt-4">
+      <Container className="mt-4" >
         <Card>
           <Card.Header className="bg-primary text-white">
             <h4>{quiz.title}</h4>
@@ -239,7 +257,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
               <h5>Quiz Instructions</h5>
               <div dangerouslySetInnerHTML={{ __html: quiz.description || 'No instructions provided.' }}></div>
             </div>
-            
+
             <div className="quiz-details mb-4">
               <p><strong>Time Limit:</strong> {quiz.timeLimit || 20} minutes</p>
               <p><strong>Points:</strong> {quiz.points || 0}</p>
@@ -247,18 +265,24 @@ const QuizTake: React.FC<QuizTakeProps> = ({
               {quiz.multipleAttempts && <p><strong>Attempts Allowed:</strong> {quiz.attemptsAllowed || 1}</p>}
               {quiz.accessCode && <p><strong>Access Code Required:</strong> Yes</p>}
             </div>
-            
-            <div className="text-center">
-              <Button size="lg" variant="success" onClick={handleStartQuiz}>
-                Start Quiz
-              </Button>
-            </div>
+
+            {attemptsExceeded ? (
+              <Alert variant="danger" className="mt-3">
+                You have reached the maximum number of allowed attempts for this quiz.
+              </Alert>
+            ) : (
+              <div className="text-center">
+                <Button size="lg" variant="success" onClick={handleStartQuiz}>
+                  Start Quiz
+                </Button>
+              </div>
+            )}
           </Card.Body>
         </Card>
       </Container>
     );
   }
-  
+
   if (quizCompleted && !previewMode) {
     return (
       <Container className="mt-4">
@@ -269,9 +293,9 @@ const QuizTake: React.FC<QuizTakeProps> = ({
           <Card.Body className="text-center">
             <h5 className="mb-4">Your quiz has been submitted successfully!</h5>
             <p>Your instructor will grade your quiz and provide feedback.</p>
-            
-            <Button 
-              variant="primary" 
+
+            <Button
+              variant="primary"
               onClick={() => navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}`)}
               className="mt-3"
             >
@@ -282,11 +306,11 @@ const QuizTake: React.FC<QuizTakeProps> = ({
       </Container>
     );
   }
-  
+
   if (!currentQuestion) {
     return <div>No questions found for this quiz.</div>;
   }
-  
+
   return (
     <Container>
       <Card className="quiz-question-card mb-4">
@@ -312,7 +336,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
             )}
             <div dangerouslySetInnerHTML={{ __html: currentQuestion.questionText }}></div>
           </div>
-          
+
           <Form>
             {currentQuestion.questionType === 'multiple_choice' && (
               <div className="multiple-choice-container">
@@ -330,7 +354,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
                 ))}
               </div>
             )}
-            
+
             {currentQuestion.questionType === 'true_false' && (
               <div className="true-false-container">
                 <Form.Check
@@ -352,7 +376,7 @@ const QuizTake: React.FC<QuizTakeProps> = ({
                 />
               </div>
             )}
-            
+
             {currentQuestion.questionType === 'fill_blank' && (
               <div className="fill-blank-container">
                 <Form.Group>
@@ -367,19 +391,19 @@ const QuizTake: React.FC<QuizTakeProps> = ({
               </div>
             )}
           </Form>
-          
+
           <div className="question-navigation d-flex justify-content-between mt-4">
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               onClick={handlePrevQuestion}
               disabled={currentQuestionIndex === 0}
             >
               Previous
             </Button>
-            
+
             {currentQuestionIndex < questions.length - 1 ? (
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleNextQuestion}
               >
                 Next
@@ -388,8 +412,8 @@ const QuizTake: React.FC<QuizTakeProps> = ({
               previewMode ? (
                 <Button variant="success" onClick={handleSubmitQuiz}>Submit Quiz</Button>
               ) : (
-                <Button 
-                  variant="success" 
+                <Button
+                  variant="success"
                   onClick={handleSubmitQuiz}
                   disabled={Object.keys(answers).length < questions.length}
                 >
@@ -400,9 +424,9 @@ const QuizTake: React.FC<QuizTakeProps> = ({
           </div>
         </Card.Body>
         <Card.Footer>
-          <ProgressBar 
-            now={(currentQuestionIndex + 1) / questions.length * 100} 
-            variant="info" 
+          <ProgressBar
+            now={(currentQuestionIndex + 1) / questions.length * 100}
+            variant="info"
             className="mb-1"
           />
           <div className="question-dots d-flex justify-content-center mt-2">
@@ -420,12 +444,12 @@ const QuizTake: React.FC<QuizTakeProps> = ({
           </div>
         </Card.Footer>
       </Card>
-      
+
       {(quiz.oneQuestionAtATime === false || previewMode) && (
         <div className="quiz-submit-section text-center mb-4">
-          <Button 
-            variant="success" 
-            size="lg" 
+          <Button
+            variant="success"
+            size="lg"
             onClick={handleSubmitQuiz}
             disabled={!previewMode && Object.keys(answers).length < questions.length}
           >
