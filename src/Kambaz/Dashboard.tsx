@@ -1,133 +1,137 @@
 // src/Kambaz/Dashboard.tsx
-import { Row, Col, Card, Button } from 'react-bootstrap'; // Import React Bootstrap components
-import { Link } from 'react-router-dom'; // For navigating to individual courses
-import './styles.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Button } from 'react-bootstrap';
 
-export default function Dashboard() {
+interface Course {
+  _id: string;
+  name: string;
+  number: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  enrolled?: boolean;
+}
+
+interface DashboardProps {
+  courses: Course[]; 
+  course?: Course;
+  setCourse?: React.Dispatch<React.SetStateAction<Course>>;
+  addNewCourse?: () => void;
+  deleteCourse?: (courseId: string) => void;
+  updateCourse?: (updatedCourse: Course) => void;
+  enrolling: boolean;
+  setEnrolling: (enrolling: boolean) => void;
+  updateEnrollment: (courseId: string, enrolled: boolean) => void;
+}
+
+export default function Dashboard({
+  courses,
+  course,
+  setCourse,
+  addNewCourse,
+  deleteCourse,
+  updateCourse,
+  enrolling,
+  setEnrolling,
+  updateEnrollment,
+}: DashboardProps) {
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+
+  const handleAddCourse = () => {
+    if (addNewCourse) {
+      addNewCourse();
+    }
+  };
+
+  const handleDeleteCourse = (id: string) => {
+    if (deleteCourse) {
+      deleteCourse(id);
+    }
+  };
+
+  const handleUpdateCourse = () => {
+    if (updateCourse && course) {
+      updateCourse(course);
+    }
+  };
+
+  const handleSetCourse = (newCourse: Course) => {
+    if (setCourse) {
+      setCourse(newCourse);
+    }
+  };
+
+  const displayCourse = () => {
+    if (course) {
+      console.log("Current course:", course);
+    }
+  };
+
+  const displayCurrentUser = () => {
+    if (currentUser) {
+      console.log("Current user:", currentUser);
+    }
+  };
+
   return (
-    <div id="wd-dashboard">
-      {/* Title and Subtitle */}
-      <h1 id="wd-dashboard-title">Dashboard</h1>
+    <div className="p-4" id="wd-dashboard">
+      <h1 id="wd-dashboard-title">
+        Dashboard
+        <button
+          onClick={() => setEnrolling(!enrolling)}
+          className="float-end btn btn-primary"
+        >
+          {enrolling ? "My Courses" : "All Courses"}
+        </button>
+      </h1>
       <hr />
-      <h2 id="wd-dashboard-published">Published Courses (7)</h2>
+      <h2 id="wd-dashboard-published">Published Courses</h2>
       <hr />
-
-      {/* Grid layout for courses */}
-      <div id="wd-dashboard-courses">
-        <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4">
-          {/* 1st Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/1234/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/reactjs.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS1234 React JS</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Full Stack Software Development
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 2nd Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/5678/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/nodejs.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS5678 Node JS</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Backend Development with Node.js
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 3rd Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/9101/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/expressjs.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS9101 Express JS</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Building REST APIs with Express.js
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 4th Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/1122/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/angular.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS1122 Angular</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Frontend Development with Angular
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 5th Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/3345/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/vuejs.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS3345 Vue.js</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Building Interactive UIs with Vue.js
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 6th Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/7789/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/python.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS7789 Python</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Programming with Python for Beginners
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-
-          {/* 7th Course */}
-          <Col className="wd-dashboard-course">
-            <Card>
-              <Link to="/Kambaz/Courses/2233/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
-                <Card.Img variant="top" src="/images/django.jpg" width="100%" height={160} />
-                <Card.Body>
-                  <Card.Title className="wd-dashboard-course-title">CS2233 Django</Card.Title>
-                  <Card.Text className="wd-dashboard-course-description">
-                    Web Development with Django and Python
-                  </Card.Text>
-                  <Button variant="primary">Go</Button>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-        </Row>
+      <div className="row" id="wd-dashboard-courses">
+        <div className="row row-cols-1 row-cols-md-5 g-4">
+          {courses.map((course) => ( 
+            <div key={course._id} className="col" style={{ width: "300px" }}>
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="wd-dashboard-course-title card-title">
+                    {enrolling && (
+                      <button
+                        onClick={(event) => {
+                          event.preventDefault();
+                          updateEnrollment(course._id, !course.enrolled);
+                        }}
+                        className={`btn ${course.enrolled ? "btn-danger" : "btn-success"} float-end`}
+                      >
+                        {course.enrolled ? "Unenroll" : "Enroll"}
+                      </button>
+                    )}
+                    {course.name}
+                  </h5>
+                  <p className="card-text">{course.description}</p>
+                  <Link
+                    to={`/Kambaz/Courses/${course._id}`}
+                    className="btn btn-primary"
+                  >
+                    Go
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+      <Button onClick={handleAddCourse}>Add Course</Button>
+      <Button onClick={() => handleDeleteCourse("someId")}>
+        Delete Course
+      </Button>
+      <Button onClick={handleUpdateCourse}>Update Course</Button>
+      <Button onClick={() => handleSetCourse({} as Course)}>
+        Set Course
+      </Button>
+      <Button onClick={displayCourse}>Display Course</Button>
+      <Button onClick={displayCurrentUser}>Display Current User</Button>
     </div>
   );
 }

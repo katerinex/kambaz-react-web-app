@@ -1,16 +1,19 @@
-//src/Kambaz/Courses/Home/Status.tsx
+// src/Kambaz/Courses/Home/Status.tsx
+
 import { MdDoNotDisturbAlt } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { BiImport } from "react-icons/bi";
 import { LiaFileImportSolid } from "react-icons/lia";
 import { Button } from "react-bootstrap";
-//import '../../styles.css';
 
-export default function CourseStatus() {
+interface CourseStatusProps {
+  courseId: string | undefined;
+}
+
+const CourseStatus: React.FC<CourseStatusProps> = () => {  // Removed unused parameter
   return (
     <div id="wd-course-status" style={{ width: "350px" }}>
       <h2>Course Status</h2>
-      
       {/* First Row - Unpublish / Publish buttons */}
       <div className="d-flex mb-3">
         <div className="w-50 pe-1">
@@ -24,7 +27,6 @@ export default function CourseStatus() {
           </Button>
         </div>
       </div>
-
       {/* Second Row - Import Existing Content / Import from Commons */}
       <Button variant="secondary" size="lg" className="w-100 mt-1 text-start">
         <BiImport className="me-2 fs-5" /> Import Existing Content
@@ -32,7 +34,6 @@ export default function CourseStatus() {
       <Button variant="secondary" size="lg" className="w-100 mt-1 text-start">
         <LiaFileImportSolid className="me-2 fs-5" /> Import from Commons
       </Button>
-
       {/* Additional Buttons */}
       <Button variant="info" size="lg" className="w-100 mt-1 text-start">
         View Course Notifications
@@ -45,6 +46,6 @@ export default function CourseStatus() {
       </Button>
     </div>
   );
-}
+};
 
-  
+export default CourseStatus;

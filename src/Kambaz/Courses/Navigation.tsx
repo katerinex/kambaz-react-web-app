@@ -1,87 +1,51 @@
-//src/Kambaz/Courses/Navigation.tsx
-import { Link, useParams } from "react-router-dom"; // Import useParams
-//import '../styles.css';
+// src/Kambaz/Courses/Navigation.tsx
 
-export default function CourseNavigation() {
-  const { cid } = useParams(); // Get the course ID
+import { Link } from "react-router-dom";
+import { FaHome, FaBook, FaCalendarDay, FaTachometerAlt, FaUsers, FaRocket } from "react-icons/fa";
 
+interface CourseNavigationProps {
+  courseId: string | undefined;
+}
+
+export default function CourseNavigation({ courseId }: CourseNavigationProps) { // Destructure and type
   return (
-    <div id="wd-courses-navigation" className="wd">
-      <ul className="list-group list-group-flush">
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Home`} // Use template literal and cid
-            id="wd-course-home-link"
-            className="d-block text-dark text-decoration-none px-4 py-3 rounded-0"
-          >
-            Home
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Modules`} // Use template literal and cid
-            id="wd-course-modules-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Modules
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Piazza`} // Use template literal and cid
-            id="wd-course-piazza-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Piazza
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Zoom`} // Use template literal and cid
-            id="wd-course-zoom-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Zoom
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Assignments`} // Use template literal and cid
-            id="wd-course-assignments-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Assignments
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Quizzes`} // Use template literal and cid
-            id="wd-course-quizzes-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Quizzes
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Grades`} // Use template literal and cid
-            id="wd-course-grades-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            Grades
-          </Link>
-        </li>
-        <li className="list-group-item">
-          <Link
-            to={`/Kambaz/Courses/${cid}/People`} // Use template literal and cid
-            id="wd-course-people-link"
-            className="d-block text-danger text-decoration-none px-4 py-3 rounded-0"
-          >
-            People
-          </Link>
-        </li>
-      </ul>
+    <div className="list-group" style={{ width: "200px" }}>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/Home`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaHome className="me-2" /> Home
+      </Link>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/Modules`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaBook className="me-2" /> Modules
+      </Link>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/Assignments`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaCalendarDay className="me-2" /> Assignments
+      </Link>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/Grades`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaTachometerAlt className="me-2" /> Grades
+      </Link>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/People`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaUsers className="me-2" /> People
+      </Link>
+      <Link
+        to={`/Kambaz/Courses/${courseId}/Settings`}
+        className="list-group-item list-group-item-action"
+      >
+        <FaRocket className="me-2" /> Settings
+      </Link>
     </div>
   );
 }
-

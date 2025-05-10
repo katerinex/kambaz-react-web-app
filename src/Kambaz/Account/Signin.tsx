@@ -1,79 +1,66 @@
 // src/Kambaz/Account/Signin.tsx
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Form, Button } from 'react-bootstrap';
-//import '../styles.css';
+
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { setCurrentUser } from "./reducer";
+import { useDispatch } from "react-redux";
+import * as client from "./client"; // Import client
+import { Form, Button, FormControl } from "react-bootstrap";
 
 export default function Signin() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [credentials, setCredentials] = useState<any>({});
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleSignIn = async () => {
-    try {
-      const response = await fetch('/api/auth/signin', { // Replace with your actual API endpoint
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userRole', data.role);
-
-        navigate('/Kambaz/Dashboard'); // Redirect to the dashboard
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Sign-in failed');
-        console.error('Sign-in error:', errorData);
-      }
-    } catch (error) {
-      console.error('Sign-in error:', error);
-      alert('A network error occurred.');
-    }
+  const signin = async () => {
+    const user = await client.signin(credentials); // Use client.signin
+    if (!user) return;
+    dispatch(setCurrentUser(user));
+    navigate("/Kambaz/Dashboard");
   };
 
   return (
-    <div id="wd-signin-screen-container">
-      <div id="wd-account-navigation">
-        <Link to="/Kambaz/Account/Signin">Signin</Link>
-        <Link to="/Kambaz/Account/Signup">Signup</Link>
-        <Link to="/Kambaz/Account/Profile">Profile</Link>
-        <Link to="/Kambaz/Dashboard">Dashboard</Link>
-      </div>
-      <div id="wd-signin-screen" className="p-4">
-        <h1>Sign in</h1>
+    <div
+      id="wd-signin-screen"
+      className="d-flex justify-content-center align-items-center vh-100"
+    >
+      <div style={{ width: "300px" }}>
+        <h1 className="text-center">Sign in</h1>
         <Form>
           <Form.Group className="mb-3">
-            <Form.Control
-              type="text"
+            <Form.Label>Username</Form.Label>
+            <FormControl
+              defaultValue={credentials.username}
+              onChange={(e) =>
+                setCredentials({ ...credentials, username: e.target.value })
+              }
               placeholder="username"
-              className="wd-username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="wd-username"
             />
           </Form.Group>
+
           <Form.Group className="mb-3">
-            <Form.Control
-              type="password"
+            <Form.Label>Password</Form.Label>
+            <FormControl
+              defaultValue={credentials.password}
+              onChange={(e) =>
+                setCredentials({ ...credentials, password: e.target.value })
+              }
               placeholder="password"
-              className="wd-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              id="wd-password"
             />
           </Form.Group>
-          <Button variant="primary" className="w-100 mb-3" onClick={handleSignIn} id="wd-signin-btn">
+
+          <Button onClick={signin} id="wd-signin-btn" className="w-100 mb-3">
             Sign in
           </Button>
-          <div className="text-center">
-            <Link to="/Kambaz/Account/Signup" id="wd-signup-link">
-              Sign up
-            </Link>
-          </div>
         </Form>
+        <div className="text-center">
+          <Link id="wd-signup-link" to="/Kambaz/Account/Signup">
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   );
